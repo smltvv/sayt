@@ -48,370 +48,114 @@ body{font-family:Arial,sans-serif;background:#0a0a0a;color:#e8e8e8;padding:20px}
     <div id="productContent" class="product"></div>
     <div id="reviewsSection" class="reviews"></div>
 </div>
-
 <script>
+var cu=null;
+var sel=5;
+var pid=null;
+var allprods=[];
 
-var currentUser = null;
-var selectedRating = 5;
-var currentProductId = null;
-
-
-function loadUser() {
-    var saved = localStorage.getItem('user');
-    if (saved) {
-        try {
-            currentUser = JSON.parse(saved);
-          
-            var users = JSON.parse(localStorage.getItem('users') || '[]');
-            var found = users.find(function(u) { return u.id === currentUser.id; });
-            if (found) {
-                currentUser = found;
-                localStorage.setItem('user', JSON.stringify(found));
-            }
-        } catch(e) {
-            currentUser = null;
-        }
-    }
+function loadUser(){
+var s=localStorage.getItem('user');
+if(s){try{cu=JSON.parse(s);var us=JSON.parse(localStorage.getItem('users')||'[]');var f=us.find(function(u){return u.id===cu.id;});if(f){cu=f;localStorage.setItem('user',JSON.stringify(f));}}catch(e){cu=null;}}
 }
 
-
-function saveUserToStorage(user) {
-    var users = JSON.parse(localStorage.getItem('users') || '[]');
-    var idx = users.findIndex(function(u) { return u.id === user.id; });
-    if (idx > -1) {
-        users[idx] = user;
-    } else {
-        users.push(user);
-    }
-    localStorage.setItem('users', JSON.stringify(users));
-    localStorage.setItem('user', JSON.stringify(user));
-    currentUser = user;
+function saveUser(){
+var us=JSON.parse(localStorage.getItem('users')||'[]');
+var idx=us.findIndex(function(u){return u.id===cu.id;});
+if(idx>-1){us[idx]=cu;}else{us.push(cu);}
+localStorage.setItem('users',JSON.stringify(us));
+localStorage.setItem('user',JSON.stringify(cu));
 }
 
-
-function showNotif(msg) {
-    var d = document.createElement('div');
-    d.className = 'notif';
-    d.textContent = msg;
-    document.body.appendChild(d);
-    setTimeout(function() { d.remove(); }, 3000);
+function showNotif(m){
+var d=document.createElement('div');
+d.className='notif';
+d.textContent=m;
+document.body.appendChild(d);
+setTimeout(function(){d.remove();},3000);
 }
 
+function loadProducts(){
+var s=localStorage.getItem('products');
+if(s){try{allprods=JSON.parse(s);}catch(e){allprods=[];}}
+if(allprods.length===0){fetch('https://dummyjson.com/products?limit=100').then(function(r){return r.json();}).then(function(d){allprods=d.products;localStorage.setItem('products',JSON.stringify(allprods));}).catch(function(){})}
+}
 
-document.addEventListener('DOMContentLoaded', function() {
-    loadUser();
-    
-    var params = new URLSearchParams(window.location.search);
-    currentProductId = parseInt(params.get('id'));
-    
-    var content = document.getElementById('productContent');
-    var reviewsSection = document.getElementById('reviewsSection');
-    
-    if (!currentProductId || isNaN(currentProductId)) {
-        content.innerHTML = '<div class="error">❌ Товар не найден (нет ID)</div>';
-        return;
-    }
-    
- 
-    fetch('https://dummyjson.com/products/' + currentProductId)
-        .then(function(response) {
-            if (!response.ok) throw new Error('Товар не найден');
-            return response.json();
-        })
-        .then(function(product) {
-            var stars = '★'.repeat(Math.floor(product.rating)) + '☆'.repeat(5 - Math.floor(product.rating));
-            var stockClass = product.stock > 0 ? 'in-stock' : 'out-stock';
-            var stockText = product.stock > 0 ? '✅ В наличии (' + product.stock + ' шт.)' : '❌ Нет в наличии';
-            
-            var thumbsHtml = '';
-            var allImages = [product.thumbnail];
-            if (product.images && product.images.length > 0) {
-                allImages = allImages.concat(product.images);
-            }
-            
-            thumbsHtml = allImages.slice(0, 4).map(function(img, index) {
-                var active = index === 0 ? 'active' : '';
-                return '<img src="' + img + '" class="thumb ' + active + '" onclick="changeMainImage(this, \'' + img + '\')">';
-            }).join('');
-            
-            content.innerHTML = `
-                <div>
-                    <img src="${product.thumbnail}" alt="${product.title}" class="img-main" id="mainImage">
-                    <div class="thumbnails">${thumbsHtml}</div>
-                </div>
-                <div class="info">
-                    <h1>${product.title}</h1>
-                    <div style="color:#888;font-size:14px">${stars} ${product.rating}</div>
-                    <div class="price">${product.price} ₽</div>
-                    <div class="stock ${stockClass}">${stockText}</div>
-                    <div class="desc">${product.description || 'Описание отсутствует'}</div>
-                    <div style="margin-top:15px">
-                        <button class="btn" onclick="addToCart(${product.id}, '${product.title}', ${product.price}, '${product.thumbnail}')">
-                            🛒 В корзину
-                        </button>
-                        <button class="btn" onclick="toggleFavorite(${product.id})">
-                            ❤️ В избранное
-                        </button>
-                    </div>
-                    ${product.brand ? '<div style="color:#888;font-size:14px;margin-top:10px">Бренд: ' + product.brand + '</div>' : ''}
-                    ${product.category ? '<div style="color:#888;font-size:14px">Категория: ' + product.category + '</div>' : ''}
-                </div>
-            `;
-            
-            
-            loadReviews(currentProductId);
-        })
-        .catch(function(error) {
-            content.innerHTML = '<div class="error">❌ ' + error.message + '</div>';
-        });
+function getProductTitle(id){
+for(var i=0;i<allprods.length;i++){if(allprods[i].id===id){return allprods[i].title;}}
+return 'Товар #'+id;
+}
+
+document.addEventListener('DOMContentLoaded',function(){
+loadUser();loadProducts();
+var p=new URLSearchParams(window.location.search);
+pid=parseInt(p.get('id'));
+var c=document.getElementById('productContent');
+var r=document.getElementById('reviewsSection');
+if(!pid||isNaN(pid)){c.innerHTML='<div class="error">❌ Товар не найден</div>';return;}
+fetch('https://dummyjson.com/products/'+pid).then(function(res){if(!res.ok)throw new Error('404');return res.json();}).then(function(pd){
+var stars='★'.repeat(Math.floor(pd.rating))+'☆'.repeat(5-Math.floor(pd.rating));
+var sc=pd.stock>0?'in-stock':'out-stock';
+var st=pd.stock>0?'✅ В наличии ('+pd.stock+' шт.)':'❌ Нет в наличии';
+var thumbs='';var imgs=[pd.thumbnail];if(pd.images&&pd.images.length>0){imgs=imgs.concat(pd.images);}
+thumbs=imgs.slice(0,4).map(function(img,i){var a=i===0?'active':'';return '<img src="'+img+'" class="thumb '+a+'" onclick="document.getElementById(\'mainImg\').src=this.src;document.querySelectorAll(\'.thumb\').forEach(function(t){t.classList.remove(\'active\');});this.classList.add(\'active\')">';}).join('');
+c.innerHTML='<div><img src="'+pd.thumbnail+'" alt="'+pd.title+'" class="img-main" id="mainImg"><div class="thumbnails">'+thumbs+'</div></div><div class="info"><h1>'+pd.title+'</h1><div style="color:#888;font-size:14px">'+stars+' '+pd.rating+'</div><div class="price">'+pd.price+' ₽</div><div class="stock '+sc+'">'+st+'</div><div class="desc">'+(pd.description||'без описания')+'</div><div style="margin-top:15px"><button class="btn" onclick="addToCart('+pd.id+',\''+pd.title+'\','+pd.price+',\''+pd.thumbnail+'\')">🛒 В корзину</button><button class="btn" onclick="toggleFav('+pd.id+')">❤️ В избранное</button></div>'+(pd.brand?'<div style="color:#888;font-size:14px;margin-top:10px">Бренд: '+pd.brand+'</div>':'')+(pd.category?'<div style="color:#888;font-size:14px">Категория: '+pd.category+'</div>':'')+'</div>';
+renderReviews(pid);
+}).catch(function(e){c.innerHTML='<div class="error">❌ '+e.message+'</div>';});
 });
 
-
-function loadReviews(productId) {
-    var reviewsSection = document.getElementById('reviewsSection');
-    var allReviews = [];
-    
-
-    fetch('https://dummyjson.com/products/' + productId + '/reviews')
-        .then(function(r) {
-            if (!r.ok) throw new Error('Нет отзывов');
-            return r.json();
-        })
-        .then(function(data) {
-            var apiReviews = data.reviews || [];
-       
-            apiReviews.forEach(function(r) {
-                r.isApi = true;
-                r.userId = 'api_' + r.reviewerEmail || 'api';
-            });
-            allReviews = allReviews.concat(apiReviews);
-            
-    
-            var allUsers = JSON.parse(localStorage.getItem('users') || '[]');
-            allUsers.forEach(function(user) {
-                if (user.reviews && user.reviews.length > 0) {
-                    user.reviews.forEach(function(review) {
-                        if (review.productId === productId) {
-                            review.userName = user.name;
-                            review.userId = user.id;
-                            review.isApi = false;
-                            allReviews.push(review);
-                        }
-                    });
-                }
-            });
-            
-            renderReviews(allReviews, productId);
-        })
-        .catch(function() {
-     
-            var allUsers = JSON.parse(localStorage.getItem('users') || '[]');
-            allUsers.forEach(function(user) {
-                if (user.reviews && user.reviews.length > 0) {
-                    user.reviews.forEach(function(review) {
-                        if (review.productId === productId) {
-                            review.userName = user.name;
-                            review.userId = user.id;
-                            review.isApi = false;
-                            allReviews.push(review);
-                        }
-                    });
-                }
-            });
-            renderReviews(allReviews, productId);
-        });
+function renderReviews(pid){
+var rs=document.getElementById('reviewsSection');
+var allReviews=[];
+fetch('https://dummyjson.com/products/'+pid+'/reviews').then(function(r){if(!r.ok)throw new Error('no');return r.json();}).then(function(d){var api=d.reviews||[];api.forEach(function(r){r.isApi=true;r.userId='api_'+r.reviewerEmail||'api';});allReviews=allReviews.concat(api);
+var us=JSON.parse(localStorage.getItem('users')||'[]');
+us.forEach(function(u){if(u.reviews&&u.reviews.length>0){u.reviews.forEach(function(rev){if(rev.productId===pid){rev.userName=u.name;rev.userId=u.id;rev.isApi=false;allReviews.push(rev);}});}});
+renderReviewsList(allReviews,pid);
+}).catch(function(){var us=JSON.parse(localStorage.getItem('users')||'[]');
+us.forEach(function(u){if(u.reviews&&u.reviews.length>0){u.reviews.forEach(function(rev){if(rev.productId===pid){rev.userName=u.name;rev.userId=u.id;rev.isApi=false;allReviews.push(rev);}});}});
+renderReviewsList(allReviews,pid);});
 }
 
-
-function renderReviews(reviews, productId) {
-    var reviewsSection = document.getElementById('reviewsSection');
-    
-
-    reviews.sort(function(a, b) {
-        var dateA = a.date || a.createdAt || 0;
-        var dateB = b.date || b.createdAt || 0;
-        return new Date(dateB) - new Date(dateA);
-    });
-    
-    var html = '<h3>📝 Отзывы (' + reviews.length + ')</h3>';
-    
-    if (reviews.length > 0) {
-        reviews.forEach(function(r) {
-            var revStars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
-            var isOwner = currentUser && r.userId === currentUser.id;
-            var isApiReview = r.isApi === true;
-            
-            html += '<div class="review" data-id="' + (r.id || '') + '">';
-            html += '<div class="review-name">' + (r.reviewerName || r.userName || 'Аноним') + 
-                    (isOwner ? ' <span style="color:#fcc419;font-size:12px">(вы)</span>' : '') +
-                    (isApiReview ? ' <span style="color:#666;font-size:12px">(из магазина)</span>' : '') +
-                    '</div>';
-            html += '<div class="review-rating">' + revStars + '</div>';
-            html += '<p class="review-text">' + (r.comment || r.text || '') + '</p>';
-            
-            // Кнопки для своих отзывов
-            if (isOwner && !isApiReview) {
-                html += '<div class="review-actions">';
-                html += '<button onclick="editReview(' + productId + ', \'' + (r.id || '') + '\')">✏️</button>';
-                html += '<button onclick="deleteReview(' + productId + ', \'' + (r.id || '') + '\')">🗑️</button>';
-                html += '</div>';
-            }
-            
-            html += '</div>';
-        });
-    } else {
-        html += '<p style="color:#888">📭 Нет отзывов. Будьте первым!</p>';
-    }
-    
-
-    if (currentUser) {
-        html += `
-            <div class="add-review">
-                <h4>✍️ Оставить отзыв</h4>
-                <div class="rating-select">
-                    ${[1,2,3,4,5].map(function(i) {
-                        var active = i === 5 ? 'active' : '';
-                        return '<button class="' + active + '" onclick="selectRating(' + i + ')">' + i + '★</button>';
-                    }).join('')}
-                </div>
-                <textarea id="reviewText" placeholder="Поделитесь впечатлениями о товаре..."></textarea>
-                <button class="btn-submit" onclick="submitReview(' + productId + ')">📤 Отправить отзыв</button>
-            </div>
-        `;
-    } else {
-        html += `
-            <div style="margin-top:20px;padding:16px;background:#111;border-radius:8px;border:1px solid #222;text-align:center;color:#888">
-                🔒 <a href="/sayt/index.html" style="color:#fcc419;text-decoration:none">Войдите</a>, чтобы оставить отзыв
-            </div>
-        `;
-    }
-    
-    reviewsSection.innerHTML = html;
+function renderReviewsList(reviews,pid){
+var rs=document.getElementById('reviewsSection');
+reviews.sort(function(a,b){var da=a.date||a.createdAt||0;var db=b.date||b.createdAt||0;return new Date(db)-new Date(da);});
+var html='<h3>📝 Отзывы ('+reviews.length+')</h3>';
+if(reviews.length>0){reviews.forEach(function(r){var rs2='★'.repeat(r.rating)+'☆'.repeat(5-r.rating);var own=cu&&r.userId===cu.id;var api=r.isApi===true;html+='<div class="review" data-id="'+(r.id||'')+'">';html+='<div class="review-name">'+(r.reviewerName||r.userName||'Аноним')+(own?' <span style="color:#fcc419;font-size:12px">(вы)</span>':'')+(api?' <span style="color:#666;font-size:12px">(из магазина)</span>':'')+'</div>';html+='<div class="review-rating">'+rs2+'</div>';html+='<p class="review-text">'+(r.comment||r.text||'')+'</p>';if(own&&!api){html+='<div class="review-actions"><button onclick="editRev('+pid+',\''+(r.id||'')+'\')">✏️</button><button onclick="delRev('+pid+',\''+(r.id||'')+'\')">🗑️</button></div>';}html+='</div>';});}else{html+='<p style="color:#888">📭 Нет отзывов</p>';}
+if(cu){html+='<div class="add-review"><h4>✍️ Оставить отзыв</h4><div class="rating-select">';for(var i=1;i<=5;i++){var a=i===5?'active':'';html+='<button class="'+a+'" onclick="selRat('+i+')">'+i+'★</button>';}html+='</div><textarea id="revText" placeholder="Поделитесь впечатлениями..."></textarea><button class="btn-submit" onclick="subRev('+pid+')">📤 Отправить</button></div>';}else{html+='<div style="margin-top:20px;padding:16px;background:#111;border-radius:8px;border:1px solid #222;text-align:center;color:#888">🔒 <a href="/sayt/index.html" style="color:#fcc419;text-decoration:none">Войдите</a>, чтобы оставить отзыв</div>';}
+rs.innerHTML=html;
 }
 
+function selRat(r){sel=r;document.querySelectorAll('.rating-select button').forEach(function(b){b.classList.remove('active');if(parseInt(b.textContent)===r){b.classList.add('active');}});}
 
-function selectRating(rating) {
-    selectedRating = rating;
-    document.querySelectorAll('.rating-select button').forEach(function(b) {
-        b.classList.remove('active');
-        if (parseInt(b.textContent) === rating) {
-            b.classList.add('active');
-        }
-    });
+function subRev(pid){
+var t=document.getElementById('revText').value.trim();
+if(!t||t.length<3){showNotif('Минимум 3 символа');return;}
+if(!cu){showNotif('Войдите');return;}
+var rev={id:'user_'+Date.now()+'_'+Math.random().toString(36).substr(2,6),productId:pid,userId:cu.id,userName:cu.name||'Пользователь',rating:sel||5,text:t,comment:t,date:new Date().toISOString(),isApi:false};
+if(!cu.reviews){cu.reviews=[];}
+cu.reviews.push(rev);
+saveUser();
+showNotif('✅ Отзыв добавлен!');
+document.getElementById('revText').value='';
+renderReviews(pid);
 }
 
-
-function submitReview(productId) {
-    var text = document.getElementById('reviewText').value.trim();
-    
-    if (!text || text.length < 3) {
-        showNotif('Напишите отзыв (минимум 3 символа)');
-        return;
-    }
-    
-    if (!currentUser) {
-        showNotif('Войдите в систему');
-        return;
-    }
-    
-    var review = {
-        id: 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
-        productId: productId,
-        userId: currentUser.id,
-        userName: currentUser.name || 'Пользователь',
-        rating: selectedRating || 5,
-        text: text,
-        comment: text,
-        date: new Date().toISOString(),
-        isApi: false
-    };
-    
-
-    if (!currentUser.reviews) {
-        currentUser.reviews = [];
-    }
-    currentUser.reviews.push(review);
-    
-
-    saveUserToStorage(currentUser);
-    
-    showNotif('✅ Отзыв добавлен!');
-    document.getElementById('reviewText').value = '';
-    
-
-    loadReviews(productId);
+function delRev(pid,rid){
+if(!confirm('Удалить?'))return;
+if(!cu){showNotif('Войдите');return;}
+if(cu.reviews){cu.reviews=cu.reviews.filter(function(r){return r.id!==rid;});saveUser();showNotif('🗑️ Удалено');renderReviews(pid);}
 }
 
-
-function deleteReview(productId, reviewId) {
-    if (!confirm('Удалить отзыв?')) return;
-    
-    if (!currentUser) {
-        showNotif('Войдите в систему');
-        return;
-    }
-    
-
-    if (currentUser.reviews) {
-        currentUser.reviews = currentUser.reviews.filter(function(r) {
-            return r.id !== reviewId;
-        });
-        saveUserToStorage(currentUser);
-        showNotif('🗑️ Отзыв удален');
-        loadReviews(productId);
-    }
+function editRev(pid,rid){
+if(!cu){showNotif('Войдите');return;}
+var rev=null;if(cu.reviews){for(var i=0;i<cu.reviews.length;i++){if(cu.reviews[i].id===rid){rev=cu.reviews[i];break;}}}
+if(!rev){showNotif('Не найдено');return;}
+var nt=prompt('Редактировать:',rev.text);
+if(nt&&nt.trim().length>=3){rev.text=nt.trim();rev.comment=nt.trim();saveUser();showNotif('✅ Обновлено');renderReviews(pid);}else if(nt!==null){showNotif('Минимум 3 символа');}
 }
 
-
-function editReview(productId, reviewId) {
-    if (!currentUser) {
-        showNotif('Войдите в систему');
-        return;
-    }
-    
-    var review = currentUser.reviews.find(function(r) { return r.id === reviewId; });
-    
-    if (!review) {
-        showNotif('Отзыв не найден');
-        return;
-    }
-    
-    var newText = prompt('Редактировать отзыв:', review.text);
-    if (newText && newText.trim().length >= 3) {
-        review.text = newText.trim();
-        review.comment = newText.trim();
-        saveUserToStorage(currentUser);
-        showNotif('✅ Отзыв обновлен');
-        loadReviews(productId);
-    } else if (newText !== null) {
-        showNotif('Минимум 3 символа');
-    }
-}
-
-
-function changeMainImage(el, src) {
-    document.querySelectorAll('.thumb').forEach(function(t) { t.classList.remove('active'); });
-    el.classList.add('active');
-    document.getElementById('mainImage').src = src;
-}
-
-
-function addToCart(id, title, price, img) {
-    var cart = JSON.parse(localStorage.getItem('cart') || '[]');
-    var exist = cart.find(function(item) { return item.id === id; });
-    if (exist) { exist.qty++; } else { cart.push({ id: id, title: title, price: price, qty: 1, img: img }); }
-    localStorage.setItem('cart', JSON.stringify(cart));
-    showNotif('✅ Товар добавлен в корзину!');
-}
-
-
-function toggleFavorite(id) {
-    var favs = JSON.parse(localStorage.getItem('favorites') || '[]');
-    var index = favs.indexOf(id);
-    if (index > -1) { favs.splice(index, 1); showNotif('❌ Удалено из избранного'); } 
-    else { favs.push(id); showNotif('❤️ Добавлено в избранное'); }
-    localStorage.setItem('favorites', JSON.stringify(favs));
-}
+function addToCart(id,title,price,img){var cart=JSON.parse(localStorage.getItem('cart')||'[]');var ex=cart.find(function(i){return i.id===id;});if(ex){ex.qty++;}else{cart.push({id:id,title:title,price:price,qty:1,img:img});}localStorage.setItem('cart',JSON.stringify(cart));showNotif('✅ В корзину');}
+function toggleFav(id){var favs=JSON.parse(localStorage.getItem('favorites')||'[]');var idx=favs.indexOf(id);if(idx>-1){favs.splice(idx,1);showNotif('❌ Удалено');}else{favs.push(id);showNotif('❤️ Добавлено');}localStorage.setItem('favorites',JSON.stringify(favs));}
 </script>
 </body>
 </html>

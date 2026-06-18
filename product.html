@@ -26,7 +26,20 @@ body{font-family:Arial,sans-serif;background:#0a0a0a;color:#e8e8e8;padding:20px}
 .review{background:#111;padding:12px;border-radius:6px;margin:10px 0}
 .review-name{color:#888;font-size:14px}
 .review-rating{color:#fcc419;letter-spacing:2px}
+.review-text{color:#ccc;margin:5px 0 0 0}
+.review-actions{display:flex;gap:8px;margin-top:6px}
+.review-actions button{background:transparent;border:1px solid #333;color:#666;padding:2px 10px;border-radius:4px;cursor:pointer;font-size:12px}
+.review-actions button:hover{background:#222;color:#fff}
+.add-review{margin-top:20px;background:#111;padding:20px;border-radius:8px;border:1px solid #222}
+.add-review h4{margin:0 0 12px 0;font-weight:300}
+.add-review textarea{width:100%;padding:10px;background:#1a1a1a;border:1px solid #333;color:#e8e8e8;border-radius:6px;min-height:80px;resize:vertical}
+.add-review .rating-select{display:flex;gap:8px;margin:10px 0}
+.add-review .rating-select button{background:transparent;border:1px solid #333;color:#666;padding:6px 14px;border-radius:4px;cursor:pointer;transition:0.3s}
+.add-review .rating-select button:hover,.add-review .rating-select button.active{background:#222;border-color:#555;color:#fff}
+.add-review .btn-submit{background:#222;border:1px solid #444;color:#e8e8e8;padding:10px 30px;border-radius:6px;cursor:pointer;margin-top:10px;transition:0.3s}
+.add-review .btn-submit:hover{background:#333}
 .error{color:#ff6b6b;text-align:center;padding:50px 0}
+.notif{position:fixed;bottom:20px;right:20px;background:#1a1a1a;border:1px solid #333;padding:12px 24px;border-radius:8px;z-index:999;max-width:300px}
 </style>
 </head>
 <body>
@@ -37,7 +50,35 @@ body{font-family:Arial,sans-serif;background:#0a0a0a;color:#e8e8e8;padding:20px}
 </div>
 
 <script>
+// ===== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ =====
+var currentUser = null;
+var selectedRating = 5;
+
+// ===== ЗАГРУЗКА ПОЛЬЗОВАТЕЛЯ =====
+function loadUser() {
+    var saved = localStorage.getItem('user');
+    if (saved) {
+        try {
+            currentUser = JSON.parse(saved);
+        } catch(e) {
+            currentUser = null;
+        }
+    }
+}
+
+// ===== ПОКАЗ УВЕДОМЛЕНИЯ =====
+function showNotif(msg) {
+    var d = document.createElement('div');
+    d.className = 'notif';
+    d.textContent = msg;
+    document.body.appendChild(d);
+    setTimeout(function() { d.remove(); }, 3000);
+}
+
+// ===== ЗАГРУЗКА СТРАНИЦЫ =====
 document.addEventListener('DOMContentLoaded', function() {
+    loadUser();
+    
     var params = new URLSearchParams(window.location.search);
     var productId = parseInt(params.get('id'));
     
@@ -49,7 +90,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
     
-   
+    // Загружаем товар
     fetch('https://dummyjson.com/products/' + productId)
         .then(function(response) {
             if (!response.ok) throw new Error('Товар не найден');
@@ -60,7 +101,6 @@ document.addEventListener('DOMContentLoaded', function() {
             var stockClass = product.stock > 0 ? 'in-stock' : 'out-stock';
             var stockText = product.stock > 0 ? '✅ В наличии (' + product.stock + ' шт.)' : '❌ Нет в наличии';
             
-          
             var thumbsHtml = '';
             var allImages = [product.thumbnail];
             if (product.images && product.images.length > 0) {
@@ -79,7 +119,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 <div class="info">
                     <h1>${product.title}</h1>
-                    <div style="color:#888;font-size:14px">${stars} ${product.rating} (${product.reviews?.length || 0} отзывов)</div>
+                    <div style="color:#888;font-size:14px">${stars} ${product.rating}</div>
                     <div class="price">${product.price} ₽</div>
                     <div class="stock ${stockClass}">${stockText}</div>
                     <div class="desc">${product.description || 'Описание отсутствует'}</div>
@@ -96,60 +136,209 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             `;
             
-            
-            fetch('https://dummyjson.com/products/' + productId + '/reviews')
-                .then(function(r) {
-                    if (!r.ok) throw new Error('Нет отзывов');
-                    return r.json();
-                })
-                .then(function(data) {
-                    var reviews = data.reviews || [];
-                    if (reviews.length > 0) {
-                        reviewsSection.innerHTML = '<h3>📝 Отзывы (' + reviews.length + ')</h3>' + 
-                            reviews.map(function(r) {
-                                var revStars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
-                                return '<div class="review">' +
-                                    '<div class="review-name">' + (r.reviewerName || 'Аноним') + '</div>' +
-                                    '<div class="review-rating">' + revStars + '</div>' +
-                                    '<p>' + (r.comment || r.text || 'Без комментария') + '</p>' +
-                                    '</div>';
-                            }).join('');
-                    } else {
-                        reviewsSection.innerHTML = '<p style="color:#888">📭 Нет отзывов. Будьте первым!</p>';
-                    }
-                })
-                .catch(function() {
-                  
-                    reviewsSection.innerHTML = '<p style="color:#888">📭 Отзывы отсутствуют</p>';
-                });
+            // ===== ЗАГРУЗКА ОТЗЫВОВ =====
+            loadReviews(productId);
         })
         .catch(function(error) {
             content.innerHTML = '<div class="error">❌ ' + error.message + '</div>';
         });
 });
 
+// ===== ЗАГРУЗКА ОТЗЫВОВ =====
+function loadReviews(productId) {
+    var reviewsSection = document.getElementById('reviewsSection');
+    
+    // Сначала пробуем загрузить из localStorage (пользовательские отзывы)
+    var localReviews = JSON.parse(localStorage.getItem('product_reviews_' + productId) || '[]');
+    var allReviews = [];
+    
+    // Загружаем из API
+    fetch('https://dummyjson.com/products/' + productId + '/reviews')
+        .then(function(r) {
+            if (!r.ok) throw new Error('Нет отзывов');
+            return r.json();
+        })
+        .then(function(data) {
+            var apiReviews = data.reviews || [];
+            // Объединяем: сначала API, потом локальные
+            allReviews = apiReviews.concat(localReviews);
+            renderReviews(allReviews, productId);
+        })
+        .catch(function() {
+            // Если API не работает, показываем только локальные
+            renderReviews(localReviews, productId);
+        });
+}
 
+// ===== ОТОБРАЖЕНИЕ ОТЗЫВОВ =====
+function renderReviews(reviews, productId) {
+    var reviewsSection = document.getElementById('reviewsSection');
+    
+    // Сортируем: новые сверху
+    reviews.sort(function(a, b) { return new Date(b.date || 0) - new Date(a.date || 0); });
+    
+    var html = '<h3>📝 Отзывы (' + reviews.length + ')</h3>';
+    
+    if (reviews.length > 0) {
+        reviews.forEach(function(r) {
+            var revStars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
+            var isOwner = currentUser && r.userId === currentUser.id;
+            var isApiReview = !r.userId || r.userId === 'api';
+            
+            html += '<div class="review" data-id="' + (r.id || '') + '">';
+            html += '<div class="review-name">' + (r.reviewerName || r.userName || 'Аноним') + 
+                    (isOwner ? ' <span style="color:#fcc419;font-size:12px">(вы)</span>' : '') +
+                    (isApiReview ? ' <span style="color:#666;font-size:12px">(из магазина)</span>' : '') +
+                    '</div>';
+            html += '<div class="review-rating">' + revStars + '</div>';
+            html += '<p class="review-text">' + (r.comment || r.text || '') + '</p>';
+            
+            // Кнопки для своих отзывов
+            if (isOwner && !isApiReview) {
+                html += '<div class="review-actions">';
+                html += '<button onclick="editReview(' + productId + ', \'' + (r.id || '') + '\')">✏️</button>';
+                html += '<button onclick="deleteReview(' + productId + ', \'' + (r.id || '') + '\')">🗑️</button>';
+                html += '</div>';
+            }
+            
+            html += '</div>';
+        });
+    } else {
+        html += '<p style="color:#888">📭 Нет отзывов. Будьте первым!</p>';
+    }
+    
+    // ===== ФОРМА ДОБАВЛЕНИЯ ОТЗЫВА =====
+    if (currentUser) {
+        html += `
+            <div class="add-review">
+                <h4>✍️ Оставить отзыв</h4>
+                <div class="rating-select">
+                    ${[1,2,3,4,5].map(function(i) {
+                        var active = i === 5 ? 'active' : '';
+                        return '<button class="' + active + '" onclick="selectRating(' + i + ')">' + i + '★</button>';
+                    }).join('')}
+                </div>
+                <textarea id="reviewText" placeholder="Поделитесь впечатлениями о товаре..."></textarea>
+                <button class="btn-submit" onclick="submitReview(' + productId + ')">📤 Отправить отзыв</button>
+            </div>
+        `;
+    } else {
+        html += `
+            <div style="margin-top:20px;padding:16px;background:#111;border-radius:8px;border:1px solid #222;text-align:center;color:#888">
+                🔒 <a href="/sayt/index.html" style="color:#fcc419;text-decoration:none">Войдите</a>, чтобы оставить отзыв
+            </div>
+        `;
+    }
+    
+    reviewsSection.innerHTML = html;
+}
+
+// ===== ВЫБОР РЕЙТИНГА =====
+function selectRating(rating) {
+    selectedRating = rating;
+    document.querySelectorAll('.rating-select button').forEach(function(b) {
+        b.classList.remove('active');
+    });
+    document.querySelectorAll('.rating-select button').forEach(function(b) {
+        if (parseInt(b.textContent) === rating) {
+            b.classList.add('active');
+        }
+    });
+}
+
+// ===== ОТПРАВКА ОТЗЫВА =====
+function submitReview(productId) {
+    var text = document.getElementById('reviewText').value.trim();
+    
+    if (!text || text.length < 3) {
+        showNotif('Напишите отзыв (минимум 3 символа)');
+        return;
+    }
+    
+    if (!currentUser) {
+        showNotif('Войдите в систему');
+        return;
+    }
+    
+    var review = {
+        id: 'user_' + Date.now(),
+        productId: productId,
+        userId: currentUser.id,
+        userName: currentUser.name || 'Пользователь',
+        rating: selectedRating || 5,
+        text: text,
+        comment: text,
+        date: new Date().toISOString()
+    };
+    
+    // Сохраняем в localStorage
+    var localReviews = JSON.parse(localStorage.getItem('product_reviews_' + productId) || '[]');
+    localReviews.push(review);
+    localStorage.setItem('product_reviews_' + productId, JSON.stringify(localReviews));
+    
+    showNotif('✅ Отзыв добавлен!');
+    document.getElementById('reviewText').value = '';
+    
+    // Обновляем отзывы
+    loadReviews(productId);
+}
+
+// ===== УДАЛЕНИЕ ОТЗЫВА =====
+function deleteReview(productId, reviewId) {
+    if (!confirm('Удалить отзыв?')) return;
+    
+    var localReviews = JSON.parse(localStorage.getItem('product_reviews_' + productId) || '[]');
+    localReviews = localReviews.filter(function(r) { return r.id !== reviewId; });
+    localStorage.setItem('product_reviews_' + productId, JSON.stringify(localReviews));
+    
+    showNotif('🗑️ Отзыв удален');
+    loadReviews(productId);
+}
+
+// ===== РЕДАКТИРОВАНИЕ ОТЗЫВА =====
+function editReview(productId, reviewId) {
+    var localReviews = JSON.parse(localStorage.getItem('product_reviews_' + productId) || '[]');
+    var review = localReviews.find(function(r) { return r.id === reviewId; });
+    
+    if (!review) {
+        showNotif('Отзыв не найден');
+        return;
+    }
+    
+    var newText = prompt('Редактировать отзыв:', review.text);
+    if (newText && newText.trim().length >= 3) {
+        review.text = newText.trim();
+        review.comment = newText.trim();
+        localStorage.setItem('product_reviews_' + productId, JSON.stringify(localReviews));
+        showNotif('✅ Отзыв обновлен');
+        loadReviews(productId);
+    } else if (newText !== null) {
+        showNotif('Минимум 3 символа');
+    }
+}
+
+// ===== СМЕНА ИЗОБРАЖЕНИЯ =====
 function changeMainImage(el, src) {
     document.querySelectorAll('.thumb').forEach(function(t) { t.classList.remove('active'); });
     el.classList.add('active');
     document.getElementById('mainImage').src = src;
 }
 
-
+// ===== КОРЗИНА =====
 function addToCart(id, title, price, img) {
     var cart = JSON.parse(localStorage.getItem('cart') || '[]');
     var exist = cart.find(function(item) { return item.id === id; });
     if (exist) { exist.qty++; } else { cart.push({ id: id, title: title, price: price, qty: 1, img: img }); }
     localStorage.setItem('cart', JSON.stringify(cart));
-    alert('✅ Товар добавлен в корзину!');
+    showNotif('✅ Товар добавлен в корзину!');
 }
 
-
+// ===== ИЗБРАННОЕ =====
 function toggleFavorite(id) {
     var favs = JSON.parse(localStorage.getItem('favorites') || '[]');
     var index = favs.indexOf(id);
-    if (index > -1) { favs.splice(index, 1); alert('❌ Удалено из избранного'); } 
-    else { favs.push(id); alert('❤️ Добавлено в избранное'); }
+    if (index > -1) { favs.splice(index, 1); showNotif('❌ Удалено из избранного'); } 
+    else { favs.push(id); showNotif('❤️ Добавлено в избранное'); }
     localStorage.setItem('favorites', JSON.stringify(favs));
 }
 </script>

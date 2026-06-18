@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>void</title>
-<link rel="stylesheet" href="css/main.css">
+<link rel="stylesheet" href="/sayt/css/main.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -43,14 +43,14 @@
 <div id="app">
 <header class="header">
 <div class="container header-wrap">
-<a href="index.html" class="logo">⨁</a>
+<a href="/sayt/index.html" class="logo">⨁</a>
 <div class="actions">
 <button id="themeToggle" class="icon-btn"><i class="fas fa-adjust"></i></button>
 <button id="accessToggle" class="icon-btn"><i class="fas fa-eye"></i></button>
-<a href="favorites.html" class="icon-btn"><i class="fas fa-heart"></i><span class="badge" id="favCount">0</span></a>
-<a href="cart.html" class="icon-btn"><i class="fas fa-shopping-bag"></i><span class="badge" id="cartCount">0</span></a>
+<a href="/sayt/favorites.html" class="icon-btn"><i class="fas fa-heart"></i><span class="badge" id="favCount">0</span></a>
+<a href="/sayt/cart.html" class="icon-btn"><i class="fas fa-shopping-bag"></i><span class="badge" id="cartCount">0</span></a>
 <div id="authBlock" style="display:flex;align-items:center;gap:6px;">
-<a href="profile.html" id="profileLink" class="icon-btn" style="display:none;width:40px;height:40px;"><i class="fas fa-user"></i></a>
+<a href="/sayt/profile.html" id="profileLink" class="icon-btn" style="display:none;width:40px;height:40px;"><i class="fas fa-user"></i></a>
 <button id="loginBtn" class="icon-btn" style="display:flex;width:40px;height:40px;"><i class="fas fa-sign-in-alt"></i></button>
 <button id="logoutBtn" class="icon-btn" style="display:none;width:40px;height:40px;"><i class="fas fa-sign-out-alt"></i></button>
 </div>
@@ -99,7 +99,7 @@ var rty = 0;
 var fgh = null;
 var vbn = [];
 
-if(!zxc){ window.location.href = '/'; }
+if(!zxc){ window.location.href = '/sayt/'; }
 
 function uio(){
 var p = getProduct(zxc);
@@ -225,7 +225,7 @@ setTimeout(function(){
 uio();
 }, 200);
 
-// Копипаст из app.js для авторизации на этой странице
+
 document.getElementById('logoutBtn')?.addEventListener('click',function(){
 localStorage.removeItem('token');
 localStorage.removeItem('user');
@@ -303,7 +303,7 @@ if(loginBtn) loginBtn.style.display = isAuth ? 'none' : 'flex';
 }
 updateAuthUI();
 
-// Темы
+
 var themeBtn = document.getElementById('themeToggle');
 if(themeBtn){
 var dark = localStorage.getItem('theme') || 'dark';
@@ -316,7 +316,7 @@ localStorage.setItem('theme', next);
 };
 }
 
-// Доступность
+
 var accBtn = document.getElementById('accessToggle');
 if(accBtn){
 accBtn.onclick = function(){

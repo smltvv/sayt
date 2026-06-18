@@ -4,18 +4,46 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>void · профиль</title>
-<link rel="stylesheet" href="css/main.css">
+<link rel="stylesheet" href="/sayt/css/main.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+.profile-wrap{display:grid;grid-template-columns:300px 1fr;gap:28px;padding:40px 0}
+.profile-sidebar{background:var(--bg2);padding:32px;border:1px solid var(--border);border-radius:var(--radius);text-align:center}
+.profile-sidebar .avatar{font-size:80px;color:var(--fg2);margin-bottom:12px}
+.profile-sidebar h2{font-weight:300;font-size:22px;margin:12px 0 4px}
+.profile-sidebar p{color:var(--fg2);font-size:14px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:24px}
+.stat{background:var(--bg3);padding:16px;border-radius:var(--radius-sm)}
+.stat-val{font-size:28px;font-weight:300;display:block}
+.stat-label{font-size:12px;color:var(--fg2)}
+.profile-content{display:flex;flex-direction:column;gap:24px}
+.profile-section{background:var(--bg2);padding:28px;border:1px solid var(--border);border-radius:var(--radius)}
+.profile-section h3{font-weight:300;font-size:17px;margin-bottom:16px;letter-spacing:1px}
+.profile-input{width:100%;padding:12px 16px;margin:8px 0;background:var(--bg3);border:1px solid var(--border);color:var(--fg);border-radius:var(--radius);transition:all .4s}
+.profile-input:focus{outline:none;border-color:var(--accent2)}
+.review-item{background:var(--bg3);padding:14px;border:1px solid var(--border);border-radius:var(--radius-sm);margin:8px 0;transition:0.3s}
+.review-item:hover{border-color:var(--accent2)}
+.review-item .review-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.review-item .review-product{color:var(--fg);font-weight:500}
+.review-item .review-rating{color:#fcc419;letter-spacing:2px}
+.review-item .review-text{color:var(--fg2);margin:6px 0 0 0;font-size:14px}
+.review-item .review-date{color:var(--fg3);font-size:12px}
+.review-item .review-actions{display:flex;gap:8px;margin-top:8px}
+.review-item .review-actions button{background:transparent;border:1px solid var(--border);color:var(--fg2);padding:4px 12px;border-radius:4px;cursor:pointer;font-size:12px;transition:0.3s}
+.review-item .review-actions button:hover{background:var(--accent);color:var(--fg)}
+.empty-msg{color:var(--fg2);padding:20px 0;text-align:center}
+@media(max-width:768px){.profile-wrap{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
 <div id="app">
 <header class="header">
 <div class="container header-wrap">
-<a href="index.html" class="logo">⨁</a>
+<a href="/sayt/index.html" class="logo">⨁</a>
 <div class="actions">
-<a href="favorites.html" class="icon-btn"><i class="fas fa-heart"></i><span class="badge" id="favCount">0</span></a>
-<a href="cart.html" class="icon-btn"><i class="fas fa-shopping-bag"></i><span class="badge" id="cartCount">0</span></a>
+<a href="/sayt/favorites.html" class="icon-btn"><i class="fas fa-heart"></i><span class="badge" id="favCount">0</span></a>
+<a href="/sayt/cart.html" class="icon-btn"><i class="fas fa-shopping-bag"></i><span class="badge" id="cartCount">0</span></a>
 <button id="logoutBtn" class="icon-btn"><i class="fas fa-sign-out-alt"></i></button>
 </div>
 </div>
@@ -52,10 +80,71 @@
 </div>
 </main>
 </div>
-<script src="js/data.js"></script>
-<script src="js/models.js"></script>
-<script src="js/viewmodels.js"></script>
-<script src="js/views.js"></script>
-<script src="js/app.js"></script>
+<script>
+var qwe=null;
+var rty=[];
+function asd(){
+var zxc=localStorage.getItem('user');
+if(!zxc){window.location.href='/sayt/index.html';return;}
+try{qwe=JSON.parse(zxc);var users=JSON.parse(localStorage.getItem('users')||'[]');var found=users.find(function(u){return u.id===qwe.id;});if(found){qwe=found;localStorage.setItem('user',JSON.stringify(found));}}catch(e){window.location.href='/sayt/index.html';}
+}
+function fgh(){
+var saved=localStorage.getItem('products');
+if(saved){try{rty=JSON.parse(saved);}catch(e){rty=[];}}
+if(rty.length===0){fetch('https://dummyjson.com/products?limit=100').then(function(r){return r.json();}).then(function(data){rty=data.products;localStorage.setItem('products',JSON.stringify(rty));vbn();}).catch(function(){vbn();});}else{vbn();}
+}
+function vbn(){
+if(!qwe)return;
+document.getElementById('profileName').textContent=qwe.name||'Пользователь';
+document.getElementById('profileEmail').textContent=qwe.email||'';
+document.getElementById('bonusCount').textContent=qwe.bonus||0;
+document.getElementById('orderCount').textContent=(qwe.orders||[]).length;
+document.getElementById('editName').value=qwe.name||'';
+document.getElementById('editEmail').value=qwe.email||'';
+var mkl=document.getElementById('ordersList');
+var orders=qwe.orders||[];
+if(orders.length>0){var html='';orders.forEach(function(orderId){var allOrders=JSON.parse(localStorage.getItem('orders')||'[]');var order=allOrders.find(function(o){return o.id===orderId;});if(order){html+='<div style="padding:12px;border:1px solid var(--border);border-radius:8px;margin:6px 0">заказ #'+order.id+' | '+order.items.length+' товаров | '+order.total+' ₽ | '+new Date(order.date).toLocaleDateString()+'</div>';}});mkl.innerHTML=html||'<p class="empty-msg">нет заказов</p>';}else{mkl.innerHTML='<p class="empty-msg">нет заказов</p>';}
+var cvb=document.getElementById('reviewsList');
+var rew=qwe.reviews||[];
+if(rew.length>0){rew.sort(function(a,b){return new Date(b.date||0)-new Date(a.date||0);});var htm='';rew.forEach(function(r){var stars='★'.repeat(r.rating)+'☆'.repeat(5-r.rating);var pname='Товар #'+r.productId;for(var i=0;i<rty.length;i++){if(rty[i].id===r.productId){pname=rty[i].title;break;}}htm+='<div class="review-item" data-id="'+r.id+'">';htm+='<div class="review-header"><span class="review-product">📦 '+pname+'</span><span class="review-date">'+new Date(r.date).toLocaleDateString()+'</span></div>';htm+='<div class="review-rating">'+stars+'</div>';htm+='<div class="review-text">'+(r.text||r.comment||'')+'</div>';htm+='<div class="review-actions"><button onclick="bnm(\''+r.id+'\')">✏️</button><button onclick="mnm(\''+r.id+'\')">🗑️</button></div>';htm+='</div>';});cvb.innerHTML=htm;}else{cvb.innerHTML='<p class="empty-msg">📭 нет отзывов</p>';}
+}
+function bnm(rid){
+if(!qwe)return;
+var rev=qwe.reviews.find(function(r){return r.id===rid;});
+if(!rev){alert('не найдено');return;}
+var txt=prompt('edit:',rev.text||rev.comment||'');
+if(txt&&txt.trim().length>=3){rev.text=txt.trim();rev.comment=txt.trim();zxcqwe();vbn();alert('ok');}else if(txt!==null){alert('минимум 3');}
+}
+function mnm(rid){
+if(!qwe)return;
+if(!confirm('удалить?'))return;
+qwe.reviews=qwe.reviews.filter(function(r){return r.id!==rid;});
+zxcqwe();vbn();alert('удалено');
+}
+function zxcqwe(){
+var users=JSON.parse(localStorage.getItem('users')||'[]');
+var idx=users.findIndex(function(u){return u.id===qwe.id;});
+if(idx>-1){users[idx]=qwe;}else{users.push(qwe);}
+localStorage.setItem('users',JSON.stringify(users));
+localStorage.setItem('user',JSON.stringify(qwe));
+}
+document.getElementById('saveProfile')?.addEventListener('click',function(){
+var nm=document.getElementById('editName').value.trim();
+var em=document.getElementById('editEmail').value.trim();
+if(nm&&em){qwe.name=nm;qwe.email=em;zxcqwe();vbn();alert('ok');}else{alert('заполни');}
+});
+document.getElementById('logoutBtn')?.addEventListener('click',function(){
+localStorage.removeItem('token');
+localStorage.removeItem('user');
+window.location.href='/sayt/index.html';
+});
+document.addEventListener('DOMContentLoaded',function(){
+asd();fgh();
+var cart=JSON.parse(localStorage.getItem('cart')||'[]');
+var favs=JSON.parse(localStorage.getItem('favorites')||'[]');
+document.getElementById('cartCount').textContent=cart.reduce(function(s,i){return s+i.qty;},0);
+document.getElementById('favCount').textContent=favs.length;
+});
+</script>
 </body>
 </html>

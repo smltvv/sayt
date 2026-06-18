@@ -104,5 +104,32 @@
 <script src="/sayt/js/viewmodels.js"></script>
 <script src="/sayt/js/views.js"></script>
 <script src="/sayt/js/app.js"></script>
+
+<script>
+// ===== ФУНКЦИЯ ДЛЯ ПЕРЕХОДА НА КАРТОЧКУ ТОВАРА =====
+window.viewProduct = function(id) {
+    if (!id) return;
+    window.location.href = '/sayt/product.html?id=' + id;
+};
+
+// Обработчик кликов по карточкам товаров (на случай, если onclick не сработает)
+document.addEventListener('DOMContentLoaded', function() {
+    var container = document.getElementById('productsContainer');
+    if (container) {
+        container.addEventListener('click', function(e) {
+            var card = e.target.closest('.product-card');
+            if (card) {
+                var id = card.dataset.id;
+                if (id) {
+                    e.preventDefault();
+                    window.viewProduct(parseInt(id));
+                }
+            }
+        });
+    }
+});
+
+console.log('✅ viewProduct function ready!');
+</script>
 </body>
 </html>

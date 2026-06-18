@@ -1,353 +1,139 @@
 <!DOCTYPE html>
-<html lang="ru" data-theme="dark">
+<html lang="ru">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>void · товар</title>
-<link rel="stylesheet" href="/sayt/css/main.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<title>Товар</title>
 <style>
-.xxx{display:grid;grid-template-columns:1fr 1fr;gap:40px;padding:40px 0}
-.zzz{position:relative}
-.www{width:100%;height:400px;object-fit:cover;border-radius:var(--radius);background:var(--bg3)}
-.qqq{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
-.qqq img{width:80px;height:80px;object-fit:cover;border-radius:var(--radius-sm);cursor:pointer;border:2px solid transparent;transition:all .3s}
-.qqq img:hover,.qqq img.aaa{border-color:var(--accent2)}
-.rrr{padding:20px 0}
-.rrr h1{font-size:28px;font-weight:300;margin-bottom:12px}
-.rrr .ttt{font-size:32px;font-weight:300;margin:16px 0}
-.rrr .yyy{color:var(--fg2);line-height:1.8;margin:16px 0}
-.rrr .uuu{color:var(--fg2);font-size:14px;margin:8px 0}
-.rrr .iii{display:flex;gap:12px;margin:20px 0;flex-wrap:wrap}
-.rrr .iii button{padding:12px 32px;background:var(--bg3);border:1px solid var(--border);color:var(--fg);border-radius:var(--radius);cursor:pointer;transition:all .4s;font-size:16px}
-.rrr .iii button:hover{background:var(--accent);transform:translateY(-2px)}
-.rrr .iii .ooo{background:transparent;border:1px solid var(--border);padding:12px 20px}
-.ppp{margin-top:40px;padding-top:30px;border-top:1px solid var(--border)}
-.ppp h3{font-weight:300;font-size:20px;margin-bottom:20px}
-.lll{padding:16px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);margin:10px 0}
-.lll .kkk{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-.lll .jjj{font-weight:500}
-.lll .hhh{color:var(--fg2);font-size:13px}
-.lll .ggg{color:var(--fg2)}
-.lll .fff{color:var(--fg2);letter-spacing:2px}
-.ddd{margin-top:24px;padding:24px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius)}
-.ddd textarea{width:100%;padding:12px;background:var(--bg3);border:1px solid var(--border);color:var(--fg);border-radius:var(--radius);min-height:100px;resize:vertical}
-.ddd .sss{display:flex;gap:8px;margin:12px 0}
-.ddd .sss button{background:transparent;border:1px solid var(--border);color:var(--fg2);padding:8px 16px;border-radius:var(--radius-sm);cursor:pointer;transition:all .3s}
-.ddd .sss button:hover,.ddd .sss button.active{background:var(--accent);border-color:var(--accent2)}
-@media(max-width:768px){.xxx{grid-template-columns:1fr}.www{height:250px}}
+body{font-family:Arial,sans-serif;background:#0a0a0a;color:#e8e8e8;padding:20px}
+.container{max-width:800px;margin:0 auto}
+.back{color:#888;text-decoration:none;display:inline-block;margin-bottom:20px}
+.product{display:grid;grid-template-columns:1fr 1fr;gap:30px}
+.img{width:100%;border-radius:8px}
+.info h1{margin:0 0 10px 0}
+.price{font-size:24px;color:#e8e8e8;margin:10px 0}
+.desc{color:#888;line-height:1.6}
+.btn{background:#222;border:1px solid #444;color:#e8e8e8;padding:10px 20px;border-radius:6px;cursor:pointer;margin-right:10px;transition:0.3s}
+.btn:hover{background:#333}
+.reviews{margin-top:30px;border-top:1px solid #222;padding-top:20px}
+.review{background:#111;padding:12px;border-radius:6px;margin:10px 0}
+.error{color:#ff6b6b;text-align:center;padding:50px 0}
 </style>
 </head>
 <body>
-<div id="app">
-<header class="header">
-<div class="container header-wrap">
-<a href="/sayt/index.html" class="logo">⨁</a>
-<div class="actions">
-<button id="themeToggle" class="icon-btn"><i class="fas fa-adjust"></i></button>
-<button id="accessToggle" class="icon-btn"><i class="fas fa-eye"></i></button>
-<a href="/sayt/favorites.html" class="icon-btn"><i class="fas fa-heart"></i><span class="badge" id="favCount">0</span></a>
-<a href="/sayt/cart.html" class="icon-btn"><i class="fas fa-shopping-bag"></i><span class="badge" id="cartCount">0</span></a>
-<div id="authBlock" style="display:flex;align-items:center;gap:6px;">
-<a href="/sayt/profile.html" id="profileLink" class="icon-btn" style="display:none;width:40px;height:40px;"><i class="fas fa-user"></i></a>
-<button id="loginBtn" class="icon-btn" style="display:flex;width:40px;height:40px;"><i class="fas fa-sign-in-alt"></i></button>
-<button id="logoutBtn" class="icon-btn" style="display:none;width:40px;height:40px;"><i class="fas fa-sign-out-alt"></i></button>
-</div>
-</div>
-</div>
-</header>
-
-<main>
 <div class="container">
-<div id="xxx" class="xxx"></div>
-</div>
-</main>
-
-<div id="authModal" class="modal">
-<div class="modal-box">
-<span class="modal-close" id="modalClose">×</span>
-<div class="tabs">
-<button class="tab active" data-tab="login">вход</button>
-<button class="tab" data-tab="register">регистрация</button>
-</div>
-<form id="loginForm">
-<input type="email" id="loginEmail" placeholder="email" required>
-<input type="password" id="loginPass" placeholder="пароль" required>
-<button type="submit" class="btn-dark">войти</button>
-</form>
-<form id="registerForm" style="display:none">
-<input type="text" id="regName" placeholder="имя" required>
-<input type="email" id="regEmail" placeholder="email" required>
-<input type="password" id="regPass" placeholder="пароль" required>
-<button type="submit" class="btn-dark">зарегистрироваться</button>
-</form>
-</div>
-</div>
+    <a href="/sayt/index.html" class="back">← На главную</a>
+    <div id="productContent" class="product"></div>
+    <div id="reviewsSection" class="reviews"></div>
 </div>
 
-<script src="/sayt/js/data.js"></script>
-<script src="/sayt/js/models.js"></script>
-<script src="/sayt/js/viewmodels.js"></script>
-<script src="/sayt/js/views.js"></script>
-<script src="/sayt/js/app.js"></script>
 <script>
-// Ждем пока загрузится data.js и DB
-setTimeout(function(){
-var qwe = document.getElementById('xxx');
-var asd = new URLSearchParams(window.location.search);
-var zxc = parseInt(asd.get('id'));
-
-if(!zxc || isNaN(zxc)){ 
-    qwe.innerHTML = '<p style="padding:40px 0;color:var(--fg2);text-align:center;">❌ товар не найден<br><a href="/sayt/index.html" style="color:var(--fg);margin-top:20px;display:inline-block;">вернуться на главную</a></p>'; 
-    return; 
-}
-
-// Проверяем, загрузились ли данные
-if(!DB || !DB.products || DB.products.length === 0){
-    qwe.innerHTML = '<p style="padding:40px 0;color:var(--fg2);text-align:center;">⏳ загрузка данных...</p>';
-    // Пробуем загрузить заново
-    loadProducts().then(function(){
-        setTimeout(renderProduct, 100);
-    });
-    return;
-}
-
-function renderProduct(){
-    var p = null;
-    for(var i=0; i<DB.products.length; i++){
-        if(DB.products[i].id === zxc){
-            p = DB.products[i];
-            break;
-        }
+// Ждем загрузки страницы
+document.addEventListener('DOMContentLoaded', function() {
+    // Получаем ID товара из URL
+    var params = new URLSearchParams(window.location.search);
+    var productId = parseInt(params.get('id'));
+    
+    var content = document.getElementById('productContent');
+    var reviewsSection = document.getElementById('reviewsSection');
+    
+    // Проверяем, что ID есть
+    if (!productId || isNaN(productId)) {
+        content.innerHTML = '<div class="error">❌ Товар не найден (нет ID)</div>';
+        return;
     }
     
-    if(!p){ 
-        qwe.innerHTML = '<p style="padding:40px 0;color:var(--fg2);text-align:center;">❌ товар не найден (ID: '+zxc+')<br><a href="/sayt/index.html" style="color:var(--fg);margin-top:20px;display:inline-block;">вернуться на главную</a></p>'; 
-        return; 
-    }
+    // Загружаем данные с DummyJSON API напрямую
+    fetch('https://dummyjson.com/products/' + productId)
+        .then(function(response) {
+            if (!response.ok) {
+                throw new Error('Товар не найден');
+            }
+            return response.json();
+        })
+        .then(function(product) {
+            // Показываем товар
+            var stars = '★'.repeat(Math.floor(product.rating)) + '☆'.repeat(5 - Math.floor(product.rating));
+            
+            content.innerHTML = `
+                <div>
+                    <img src="${product.thumbnail}" alt="${product.title}" class="img">
+                    ${product.images ? product.images.slice(0,3).map(img => `<img src="${img}" style="width:80px;height:80px;object-fit:cover;border-radius:4px;margin:4px;cursor:pointer" onclick="this.parentElement.querySelector('.img').src=this.src">`).join('') : ''}
+                </div>
+                <div class="info">
+                    <h1>${product.title}</h1>
+                    <div style="color:#888">${stars} ${product.rating}</div>
+                    <div class="price">${product.price} ₽</div>
+                    <div class="desc">${product.description || 'Описание отсутствует'}</div>
+                    <div style="margin:15px 0;color:${product.stock > 0 ? '#51cf66' : '#ff6b6b'}">
+                        ${product.stock > 0 ? '✅ В наличии' : '❌ Нет в наличии'}
+                    </div>
+                    <div>
+                        <button class="btn" onclick="addToCart(${product.id}, '${product.title}', ${product.price}, '${product.thumbnail}')">
+                            🛒 В корзину
+                        </button>
+                        <button class="btn" onclick="toggleFavorite(${product.id})">
+                            ❤️ В избранное
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Загружаем отзывы
+            fetch('https://dummyjson.com/products/' + productId + '/reviews')
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.reviews && data.reviews.length > 0) {
+                        reviewsSection.innerHTML = '<h3>Отзывы (' + data.reviews.length + ')</h3>' + 
+                            data.reviews.map(function(r) {
+                                return '<div class="review">' +
+                                    '<strong>' + r.reviewerName + '</strong> ' + '★'.repeat(r.rating) +
+                                    '<p>' + r.comment + '</p>' +
+                                    '</div>';
+                            }).join('');
+                    } else {
+                        reviewsSection.innerHTML = '<p style="color:#888">Нет отзывов</p>';
+                    }
+                })
+                .catch(function() {
+                    reviewsSection.innerHTML = '<p style="color:#888">Не удалось загрузить отзывы</p>';
+                });
+        })
+        .catch(function(error) {
+            content.innerHTML = '<div class="error">❌ ' + error.message + '</div>';
+        });
+});
 
-    // Добавляем в недавно просмотренные
-    var jkl = JSON.parse(localStorage.getItem('recent')||'[]');
-    jkl = jkl.filter(function(x){ return x !== zxc; });
-    jkl.unshift(zxc);
-    if(jkl.length > 10) jkl.pop();
-    localStorage.setItem('recent', JSON.stringify(jkl));
-
-    // Счетчики
-    var nm = JSON.parse(localStorage.getItem('cart')||'[]');
-    var bv = JSON.parse(localStorage.getItem('favorites')||'[]');
-    document.getElementById('cartCount').textContent = nm.reduce(function(s,i){ return s + i.qty; }, 0);
-    document.getElementById('favCount').textContent = bv.length;
-
-    var cx = getProductReviews ? getProductReviews(zxc) : [];
-    var vz = '★'.repeat(Math.floor(p.rating)) + '☆'.repeat(5 - Math.floor(p.rating));
-    var mk = bv.includes(zxc);
-    var lo = nm.find(function(i){ return i.id === zxc; });
-
-    var xc = '';
-    xc += '<div class="zzz">';
-    xc += '<img src="' + (p.images && p.images[0] ? p.images[0] : p.img || 'https://via.placeholder.com/600x400/1a1a1a/666?text=No+Image') + '" alt="' + p.title + '" class="www" id="mainImg">';
-    xc += '<div class="qqq">';
-    var vb = p.images || [p.img];
-    for(var i=0; i<Math.min(vb.length,4); i++){
-        var img = vb[i] || p.img;
-        var active = (img === (p.images?.[0] || p.img)) ? 'aaa' : '';
-        xc += '<img src="' + img + '" onclick="document.getElementById(\'mainImg\').src=this.src;document.querySelectorAll(\'.qqq img\').forEach(function(el){el.classList.remove(\'aaa\');});this.classList.add(\'aaa\')" class="' + active + '">';
-    }
-    xc += '</div></div>';
-
-    xc += '<div class="rrr">';
-    xc += '<h1>' + p.title + '</h1>';
-    xc += '<div class="fff">' + vz + ' ' + p.rating + '</div>';
-    xc += '<div class="ttt">' + p.price + ' ₽</div>';
-    xc += '<div class="uuu">' + (p.stock > 0 ? '✅ в наличии' : '❌ нет в наличии') + '</div>';
-    xc += '<div class="yyy">' + (p.desc || p.description || 'без описания') + '</div>';
-    xc += '<div class="iii">';
-    xc += '<button onclick="cvb(' + p.id + ')" class="add-btn"><i class="fas fa-shopping-bag"></i> ' + (lo ? 'в корзине' : 'в корзину') + '</button>';
-    xc += '<button onclick="bnm(' + p.id + ')" class="ooo" style="color:' + (mk ? 'var(--fg)' : 'var(--fg2)') + '"><i class="fas fa-heart"></i> ' + (mk ? 'в избранном' : 'в избранное') + '</button>';
-    xc += '</div></div>';
-
-    xc += '<div class="ppp"><h3>отзывы (' + cx.length + ')</h3>';
-    if(cx.length > 0){
-        for(var j=0; j<cx.length; j++){
-            var r = cx[j];
-            var u = getUser ? getUser(r.userId) : null;
-            xc += '<div class="lll">';
-            xc += '<div class="kkk"><span class="jjj">' + (u ? u.name : 'Аноним') + '</span><span class="hhh">' + new Date(r.date).toLocaleDateString() + '</span></div>';
-            xc += '<div class="fff">' + '★'.repeat(r.rating) + '</div>';
-            xc += '<div class="ggg">' + r.text + '</div>';
-            xc += '</div>';
-        }
+// Функция добавления в корзину
+function addToCart(id, title, price, img) {
+    var cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    var exist = cart.find(function(item) { return item.id === id; });
+    
+    if (exist) {
+        exist.qty++;
     } else {
-        xc += '<p style="color:var(--fg2)">нет отзывов</p>';
+        cart.push({ id: id, title: title, price: price, qty: 1, img: img });
     }
-
-    if(typeof currentUser !== 'undefined' && currentUser){
-        xc += '<div class="ddd">';
-        xc += '<h4>оставить отзыв</h4>';
-        xc += '<div class="sss">';
-        var stars = [1,2,3,4,5];
-        for(var s=0; s<stars.length; s++){
-            xc += '<button onclick="document.querySelectorAll(\'.sss button\').forEach(function(b){b.classList.remove(\'active\');});this.classList.add(\'active\');window._selectedRating=' + stars[s] + '">' + stars[s] + '★</button>';
-        }
-        xc += '</div>';
-        xc += '<textarea id="reviewText" placeholder="ваш отзыв..."></textarea>';
-        xc += '<button onclick="wer(' + p.id + ')" class="btn-dark" style="margin-top:12px">отправить</button>';
-        xc += '</div>';
-    }
-    xc += '</div>';
-
-    qwe.innerHTML = xc;
-}
-
-renderProduct();
-
-// Функции для кнопок
-window.cvb = function(id){
-    var cart = JSON.parse(localStorage.getItem('cart')||'[]');
-    var exist = cart.find(function(i){ return i.id === id; });
-    if(exist){ exist.qty++; }else{ 
-        var p = getProduct ? getProduct(id) : null;
-        if(p) cart.push({id:id, title:p.title, price:p.price, qty:1, img:p.img}); 
-    }
+    
     localStorage.setItem('cart', JSON.stringify(cart));
-    document.getElementById('cartCount').textContent = cart.reduce(function(s,i){ return s + i.qty; }, 0);
-    var msg = document.createElement('div');
-    msg.style.cssText = 'position:fixed;bottom:20px;right:20px;background:var(--bg2);border:1px solid var(--border);padding:12px 24px;color:var(--fg);z-index:9999;border-radius:8px;animation:fadeIn .3s;max-width:300px;';
-    msg.textContent = 'добавлено в корзину';
-    document.body.appendChild(msg);
-    setTimeout(function(){ msg.remove(); }, 3000);
-    // Обновляем кнопку
-    var btns = document.querySelectorAll('.add-btn');
-    btns.forEach(function(b){ b.innerHTML = '<i class="fas fa-shopping-bag"></i> в корзине'; });
-};
+    alert('✅ Товар добавлен в корзину!');
+}
 
-window.bnm = function(id){
-    var favs = JSON.parse(localStorage.getItem('favorites')||'[]');
-    var idx = favs.indexOf(id);
-    if(idx > -1){ favs.splice(idx,1); } else { favs.push(id); }
+// Функция добавления в избранное
+function toggleFavorite(id) {
+    var favs = JSON.parse(localStorage.getItem('favorites') || '[]');
+    var index = favs.indexOf(id);
+    
+    if (index > -1) {
+        favs.splice(index, 1);
+        alert('❌ Удалено из избранного');
+    } else {
+        favs.push(id);
+        alert('❤️ Добавлено в избранное');
+    }
+    
     localStorage.setItem('favorites', JSON.stringify(favs));
-    document.getElementById('favCount').textContent = favs.length;
-    window.location.reload();
-};
-
-window.wer = function(id){
-    var txt = document.getElementById('reviewText')?.value;
-    var rt = window._selectedRating || 5;
-    if(!txt || txt.trim().length < 3){ 
-        var msg = document.createElement('div');
-        msg.style.cssText = 'position:fixed;bottom:20px;right:20px;background:var(--bg2);border:1px solid var(--border);padding:12px 24px;color:var(--fg);z-index:9999;border-radius:8px;max-width:300px;';
-        msg.textContent = 'напиши отзыв (минимум 3 символа)';
-        document.body.appendChild(msg);
-        setTimeout(function(){ msg.remove(); }, 3000);
-        return; 
-    }
-    if(typeof currentUser === 'undefined' || !currentUser){ 
-        alert('войдите в систему');
-        return; 
-    }
-    if(typeof addReview === 'function'){
-        addReview(id, currentUser.id, txt, rt);
-        var msg = document.createElement('div');
-        msg.style.cssText = 'position:fixed;bottom:20px;right:20px;background:var(--bg2);border:1px solid var(--border);padding:12px 24px;color:var(--fg);z-index:9999;border-radius:8px;max-width:300px;';
-        msg.textContent = 'спасибо за отзыв!';
-        document.body.appendChild(msg);
-        setTimeout(function(){ msg.remove(); }, 3000);
-        setTimeout(function(){ window.location.reload(); }, 1500);
-    }
-};
-
-// Авторизация на странице (копипаст из app.js)
-document.getElementById('logoutBtn')?.addEventListener('click',function(){
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    if(typeof currentUser !== 'undefined') currentUser = null;
-    window.location.href = '/sayt/index.html';
-});
-
-var modal = document.getElementById('authModal');
-var loginBtn = document.getElementById('loginBtn');
-var closeBtn = document.getElementById('modalClose');
-var tabs = document.querySelectorAll('.tab');
-var loginForm = document.getElementById('loginForm');
-var registerForm = document.getElementById('registerForm');
-
-if(loginBtn)loginBtn.onclick = function(){ modal.style.display = 'flex'; };
-if(closeBtn)closeBtn.onclick = function(){ modal.style.display = 'none'; };
-if(modal)modal.onclick = function(e){ if(e.target === modal) modal.style.display = 'none'; };
-
-tabs.forEach(function(t){
-    t.onclick = function(){
-        tabs.forEach(function(x){ x.classList.remove('active'); });
-        this.classList.add('active');
-        var tab = this.dataset.tab;
-        loginForm.style.display = tab === 'login' ? 'block' : 'none';
-        registerForm.style.display = tab === 'register' ? 'block' : 'none';
-    };
-});
-
-if(loginForm){
-    loginForm.onsubmit = function(e){
-        e.preventDefault();
-        var email = document.getElementById('loginEmail').value;
-        var pass = document.getElementById('loginPass').value;
-        var u = typeof findUser === 'function' ? findUser(email,pass) : null;
-        if(u){
-            if(typeof currentUser !== 'undefined') currentUser = u;
-            localStorage.setItem('token', btoa(email + ':' + pass));
-            localStorage.setItem('user', JSON.stringify(u));
-            modal.style.display = 'none';
-            window.location.reload();
-        } else {
-            alert('неверные данные');
-        }
-    };
 }
-
-if(registerForm){
-    registerForm.onsubmit = function(e){
-        e.preventDefault();
-        var name = document.getElementById('regName').value;
-        var email = document.getElementById('regEmail').value;
-        var pass = document.getElementById('regPass').value;
-        if(DB && DB.users && DB.users.find(function(u){ return u.email === email; })){ 
-            alert('email уже используется'); 
-            return; 
-        }
-        var u = {id:Date.now(), email:email, pass:btoa(pass), name:name, bonus:100, orders:[], favs:[], reviews:[]};
-        if(DB && DB.users){
-            DB.users.push(u);
-            if(typeof saveUsers === 'function') saveUsers();
-        }
-        if(typeof currentUser !== 'undefined') currentUser = u;
-        localStorage.setItem('token', btoa(email + ':' + pass));
-        localStorage.setItem('user', JSON.stringify(u));
-        modal.style.display = 'none';
-        window.location.reload();
-    };
-}
-
-
-var themeBtn = document.getElementById('themeToggle');
-if(themeBtn){
-    var dark = localStorage.getItem('theme') || 'dark';
-    document.documentElement.setAttribute('data-theme', dark);
-    themeBtn.onclick = function(){
-        var current = document.documentElement.getAttribute('data-theme');
-        var next = current === 'dark' ? 'light' : 'dark';
-        document.documentElement.setAttribute('data-theme', next);
-        localStorage.setItem('theme', next);
-    };
-}
-
-var accBtn = document.getElementById('accessToggle');
-if(accBtn){
-    accBtn.onclick = function(){
-        document.body.classList.toggle('access-mode');
-    };
-}
-}, 500);
 </script>
 </body>
 </html>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>void · игра</title>
+<link rel="stylesheet" href="css/main.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<div id="app">
+<header class="header">
+<div class="container header-wrap">
+<a href="index.html" class="logo">⨁</a>
+<div class="actions">
+<a href="index.html" class="icon-btn"><i class="fas fa-home"></i></a>
+<a href="favorites.html" class="icon-btn"><i class="fas fa-heart"></i><span class="badge" id="favCount">0</span></a>
+<a href="cart.html" class="icon-btn"><i class="fas fa-shopping-bag"></i><span class="badge" id="cartCount">0</span></a>
+<button id="logoutBtn" class="icon-btn"><i class="fas fa-sign-out-alt"></i></button>
+</div>
+</div>
+</header>
+
+<main class="game-page">
+<div class="container">
+<h1 class="page-title">🎮 игра</h1>
+<div class="game-wrap">
+<div class="game-display">
+<p>ваши бонусы: <span id="gameBonus">0</span></p>
+<button id="spinBtn" class="btn-dark">крутить</button>
+<div id="gameResult" class="game-result">нажми кнопку чтобы начать</div>
+</div>
+<div class="promo-section">
+<h3 style="font-weight:300;letter-spacing:1px;margin-bottom:16px;">промокоды</h3>
+<div id="promoCodes"></div>
+</div>
+</div>
+</div>
+</main>
+</div>
+
+<script>
+// ===== DATA =====
+let DB = {users:[]};
+let currentUser = null;
+
+function loadUsers(){
+DB.users = JSON.parse(localStorage.getItem('users')||'[]');
+if(!DB.users.find(u=>u.email==='liubovsheyda@gmail.com')){
+DB.users.push({id:999,email:'liubovsheyda@gmail.com',pass:btoa('Teacher_2026'),name:'Преподаватель',bonus:1000,orders:[],favs:[],reviews:[]});
+localStorage.setItem('users',JSON.stringify(DB.users));
+}
+}
+
+function getUser(id){return DB.users.find(u=>u.id===id);}
+function updateUser(id,data){
+const idx=DB.users.findIndex(u=>u.id===id);
+if(idx>-1){DB.users[idx]={...DB.users[idx],...data};localStorage.setItem('users',JSON.stringify(DB.users));return DB.users[idx];}
+return null;
+}
+
+function saveUsers(){localStorage.setItem('users',JSON.stringify(DB.users));}
+
+// ===== AUTH =====
+function checkAuth(){
+const saved = localStorage.getItem('user');
+if(saved){
+try{
+currentUser = JSON.parse(saved);
+const user = getUser(currentUser.id);
+if(user) currentUser = user;
+}catch(e){}
+}
+if(!currentUser){
+window.location.href = 'index.html';
+return false;
+}
+return true;
+}
+
+// ===== GAME =====
+function renderGame(){
+if(!currentUser) return;
+document.getElementById('gameBonus').textContent = currentUser.bonus || 0;
+const codes = document.getElementById('promoCodes');
+if(codes){
+if(currentUser.bonus >= 500){
+codes.innerHTML = `
+<div class="promo-code">🎁 PROMO50 - скидка 50%</div>
+<div class="promo-code">🎁 BONUS100 - +100 бонусов</div>
+<div class="promo-code">🎁 FREESHIP - бесплатная доставка</div>
+`;
+} else {
+codes.innerHTML = `<div style="color:var(--fg2);padding:20px;text-align:center;">накопить 500 бонусов для промокодов<br><span style="font-size:13px;">осталось ${500 - (currentUser.bonus||0)} бонусов</span></div>`;
+}
+}
+}
+
+function spin(){
+if(!currentUser){ alert('войдите в систему'); return; }
+const bonus = Math.floor(Math.random() * 200) + 50;
+const user = getUser(currentUser.id);
+if(user){
+user.bonus = (user.bonus || 0) + bonus;
+updateUser(user.id, user);
+currentUser = user;
+localStorage.setItem('user', JSON.stringify(user));
+document.getElementById('gameBonus').textContent = user.bonus;
+document.getElementById('gameResult').textContent = `🎉 +${bonus} бонусов! (всего: ${user.bonus})`;
+renderGame();
+const msg = document.createElement('div');
+msg.style.cssText = 'position:fixed;bottom:20px;right:20px;background:var(--bg2);border:1px solid var(--border);padding:12px 24px;color:var(--fg);z-index:9999;border-radius:8px;animation:fadeIn .3s;max-width:300px;';
+msg.textContent = `выиграно ${bonus} бонусов!`;
+document.body.appendChild(msg);
+setTimeout(()=>msg.remove(), 3000);
+}
+}
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', function(){
+loadUsers();
+if(!checkAuth()) return;
+
+// счетчики
+const cart = JSON.parse(localStorage.getItem('cart')||'[]');
+const favs = JSON.parse(localStorage.getItem('favorites')||'[]');
+document.getElementById('cartCount').textContent = cart.reduce((s,i)=>s+i.qty,0);
+document.getElementById('favCount').textContent = favs.length;
+
+renderGame();
+
+document.getElementById('spinBtn').addEventListener('click', spin);
+
+document.getElementById('logoutBtn').addEventListener('click', function(){
+localStorage.removeItem('token');
+localStorage.removeItem('user');
+currentUser = null;
+window.location.href = 'index.html';
+});
+
+// темы
+const themeBtn = document.getElementById('themeToggle');
+if(themeBtn){
+const dark = localStorage.getItem('theme') || 'dark';
+document.documentElement.setAttribute('data-theme', dark);
+themeBtn.onclick = function(){
+const current = document.documentElement.getAttribute('data-theme');
+const next = current === 'dark' ? 'light' : 'dark';
+document.documentElement.setAttribute('data-theme', next);
+localStorage.setItem('theme', next);
+};
+}
+
+// доступность
+const accBtn = document.getElementById('accessToggle');
+if(accBtn){
+accBtn.onclick = function(){
+document.body.classList.toggle('access-mode');
+};
+}
+});
+</script>
+</body>
+</html>

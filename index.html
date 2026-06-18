@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>void shop</title>
+<link rel="stylesheet" href="css/main.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<div id="app">
+<header class="header">
+<div class="container header-wrap">
+<a href="index.html" class="logo">⨁</a>
+<div class="search-box">
+<input type="text" id="searchInput" placeholder="поиск..." class="search-input">
+</div>
+<div class="actions">
+<button id="themeToggle" class="icon-btn"><i class="fas fa-adjust"></i></button>
+<button id="accessToggle" class="icon-btn"><i class="fas fa-eye"></i></button>
+<a href="game.html" class="icon-btn" title="игра"><i class="fas fa-gamepad"></i></a>
+<a href="favorites.html" class="icon-btn"><i class="fas fa-heart"></i><span class="badge" id="favCount">0</span></a>
+<a href="cart.html" class="icon-btn"><i class="fas fa-shopping-bag"></i><span class="badge" id="cartCount">0</span></a>
+<div id="authBlock" style="display:flex;align-items:center;gap:6px;">
+<a href="profile.html" id="profileLink" class="icon-btn" style="display:none;width:40px;height:40px;"><i class="fas fa-user"></i></a>
+<button id="loginBtn" class="icon-btn" style="display:flex;width:40px;height:40px;"><i class="fas fa-sign-in-alt"></i></button>
+<button id="logoutBtn" class="icon-btn" style="display:none;width:40px;height:40px;"><i class="fas fa-sign-out-alt"></i></button>
+</div>
+</div>
+</div>
+</header>
+
+<section class="slider-section">
+<div class="slider-wrap">
+<div class="slider-track" id="sliderTrack">
+<div class="slide"><div class="slide-content"><h2>−25%</h2><p>на всё</p></div></div>
+<div class="slide"><div class="slide-content"><h2>бесплатная доставка</h2><p>от 5000₽</p></div></div>
+<div class="slide"><div class="slide-content"><h2>подарок</h2><p>к каждому заказу</p></div></div>
+</div>
+<button class="slider-btn prev" id="sliderPrev">〈</button>
+<button class="slider-btn next" id="sliderNext">〉</button>
+</div>
+</section>
+
+<section class="filters">
+<div class="container">
+<div class="filter-row">
+<select id="filterCat" class="filter-select"><option value="">категория</option><option value="smartphones">смартфоны</option><option value="laptops">ноутбуки</option><option value="tablets">планшеты</option><option value="audio">аудио</option><option value="accessories">аксессуары</option></select>
+<input type="number" id="filterMin" placeholder="от" class="filter-input">
+<input type="number" id="filterMax" placeholder="до" class="filter-input">
+<select id="filterBrand" class="filter-select"><option value="">бренд</option><option value="Apple">apple</option><option value="Samsung">samsung</option><option value="Xiaomi">xiaomi</option><option value="Sony">sony</option></select>
+<select id="filterRating" class="filter-select"><option value="0">рейтинг</option><option value="4">4+</option><option value="3">3+</option><option value="2">2+</option></select>
+<label class="filter-check"><input type="checkbox" id="filterStock"> в наличии</label>
+</div>
+<div class="sort-row">
+<select id="sortSelect" class="filter-select"><option value="popular">популярные</option><option value="price_asc">сначала дешевые</option><option value="price_desc">сначала дорогие</option><option value="rating">по рейтингу</option></select>
+<button id="gridView" class="view-btn active"><i class="fas fa-th"></i></button>
+<button id="listView" class="view-btn"><i class="fas fa-list"></i></button>
+</div>
+</div>
+</section>
+
+<main class="catalog">
+<div class="container">
+<div id="productsContainer" class="product-grid"></div>
+<button id="loadMore" class="load-more-btn">загрузить еще</button>
+</div>
+</section>
+
+<section class="recent">
+<div class="container">
+<h3 class="section-title">недавно смотрели</h3>
+<div id="recentlyViewed" class="mini-grid"></div>
+<h3 class="section-title">популярное</h3>
+<div id="popularProducts" class="mini-grid"></div>
+</div>
+</section>
+
+<div id="authModal" class="modal">
+<div class="modal-box">
+<span class="modal-close" id="modalClose">×</span>
+<div class="tabs">
+<button class="tab active" data-tab="login">вход</button>
+<button class="tab" data-tab="register">регистрация</button>
+</div>
+<form id="loginForm">
+<input type="email" id="loginEmail" placeholder="email" required>
+<input type="password" id="loginPass" placeholder="пароль" required>
+<button type="submit" class="btn-dark">войти</button>
+</form>
+<form id="registerForm" style="display:none">
+<input type="text" id="regName" placeholder="имя" required>
+<input type="email" id="regEmail" placeholder="email" required>
+<input type="password" id="regPass" placeholder="пароль" required>
+<button type="submit" class="btn-dark">зарегистрироваться</button>
+</form>
+</div>
+</div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/models.js"></script>
+<script src="js/viewmodels.js"></script>
+<script src="js/views.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

@@ -8,15 +8,24 @@
 body{font-family:Arial,sans-serif;background:#0a0a0a;color:#e8e8e8;padding:20px}
 .container{max-width:800px;margin:0 auto}
 .back{color:#888;text-decoration:none;display:inline-block;margin-bottom:20px}
+.back:hover{color:#fff}
 .product{display:grid;grid-template-columns:1fr 1fr;gap:30px}
-.img{width:100%;border-radius:8px}
+.img-main{width:100%;border-radius:8px;max-height:400px;object-fit:contain;background:#111}
+.thumbnails{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.thumb{width:70px;height:70px;object-fit:cover;border-radius:6px;cursor:pointer;border:2px solid transparent;transition:0.3s}
+.thumb:hover,.thumb.active{border-color:#555}
 .info h1{margin:0 0 10px 0}
 .price{font-size:24px;color:#e8e8e8;margin:10px 0}
 .desc{color:#888;line-height:1.6}
+.stock{display:inline-block;padding:4px 12px;border-radius:20px;font-size:14px;margin:10px 0}
+.in-stock{background:#1a3a1a;color:#51cf66}
+.out-stock{background:#3a1a1a;color:#ff6b6b}
 .btn{background:#222;border:1px solid #444;color:#e8e8e8;padding:10px 20px;border-radius:6px;cursor:pointer;margin-right:10px;transition:0.3s}
 .btn:hover{background:#333}
 .reviews{margin-top:30px;border-top:1px solid #222;padding-top:20px}
 .review{background:#111;padding:12px;border-radius:6px;margin:10px 0}
+.review-name{color:#888;font-size:14px}
+.review-rating{color:#fcc419;letter-spacing:2px}
 .error{color:#ff6b6b;text-align:center;padding:50px 0}
 </style>
 </head>
@@ -28,47 +37,53 @@ body{font-family:Arial,sans-serif;background:#0a0a0a;color:#e8e8e8;padding:20px}
 </div>
 
 <script>
-// Ждем загрузки страницы
 document.addEventListener('DOMContentLoaded', function() {
-    // Получаем ID товара из URL
     var params = new URLSearchParams(window.location.search);
     var productId = parseInt(params.get('id'));
     
     var content = document.getElementById('productContent');
     var reviewsSection = document.getElementById('reviewsSection');
     
-    // Проверяем, что ID есть
     if (!productId || isNaN(productId)) {
         content.innerHTML = '<div class="error">❌ Товар не найден (нет ID)</div>';
         return;
     }
     
-    // Загружаем данные с DummyJSON API напрямую
+   
     fetch('https://dummyjson.com/products/' + productId)
         .then(function(response) {
-            if (!response.ok) {
-                throw new Error('Товар не найден');
-            }
+            if (!response.ok) throw new Error('Товар не найден');
             return response.json();
         })
         .then(function(product) {
-            // Показываем товар
             var stars = '★'.repeat(Math.floor(product.rating)) + '☆'.repeat(5 - Math.floor(product.rating));
+            var stockClass = product.stock > 0 ? 'in-stock' : 'out-stock';
+            var stockText = product.stock > 0 ? '✅ В наличии (' + product.stock + ' шт.)' : '❌ Нет в наличии';
+            
+          
+            var thumbsHtml = '';
+            var allImages = [product.thumbnail];
+            if (product.images && product.images.length > 0) {
+                allImages = allImages.concat(product.images);
+            }
+            
+            thumbsHtml = allImages.slice(0, 4).map(function(img, index) {
+                var active = index === 0 ? 'active' : '';
+                return '<img src="' + img + '" class="thumb ' + active + '" onclick="changeMainImage(this, \'' + img + '\')">';
+            }).join('');
             
             content.innerHTML = `
                 <div>
-                    <img src="${product.thumbnail}" alt="${product.title}" class="img">
-                    ${product.images ? product.images.slice(0,3).map(img => `<img src="${img}" style="width:80px;height:80px;object-fit:cover;border-radius:4px;margin:4px;cursor:pointer" onclick="this.parentElement.querySelector('.img').src=this.src">`).join('') : ''}
+                    <img src="${product.thumbnail}" alt="${product.title}" class="img-main" id="mainImage">
+                    <div class="thumbnails">${thumbsHtml}</div>
                 </div>
                 <div class="info">
                     <h1>${product.title}</h1>
-                    <div style="color:#888">${stars} ${product.rating}</div>
+                    <div style="color:#888;font-size:14px">${stars} ${product.rating} (${product.reviews?.length || 0} отзывов)</div>
                     <div class="price">${product.price} ₽</div>
+                    <div class="stock ${stockClass}">${stockText}</div>
                     <div class="desc">${product.description || 'Описание отсутствует'}</div>
-                    <div style="margin:15px 0;color:${product.stock > 0 ? '#51cf66' : '#ff6b6b'}">
-                        ${product.stock > 0 ? '✅ В наличии' : '❌ Нет в наличии'}
-                    </div>
-                    <div>
+                    <div style="margin-top:15px">
                         <button class="btn" onclick="addToCart(${product.id}, '${product.title}', ${product.price}, '${product.thumbnail}')">
                             🛒 В корзину
                         </button>
@@ -76,27 +91,36 @@ document.addEventListener('DOMContentLoaded', function() {
                             ❤️ В избранное
                         </button>
                     </div>
+                    ${product.brand ? '<div style="color:#888;font-size:14px;margin-top:10px">Бренд: ' + product.brand + '</div>' : ''}
+                    ${product.category ? '<div style="color:#888;font-size:14px">Категория: ' + product.category + '</div>' : ''}
                 </div>
             `;
             
-            // Загружаем отзывы
+            
             fetch('https://dummyjson.com/products/' + productId + '/reviews')
-                .then(function(r) { return r.json(); })
+                .then(function(r) {
+                    if (!r.ok) throw new Error('Нет отзывов');
+                    return r.json();
+                })
                 .then(function(data) {
-                    if (data.reviews && data.reviews.length > 0) {
-                        reviewsSection.innerHTML = '<h3>Отзывы (' + data.reviews.length + ')</h3>' + 
-                            data.reviews.map(function(r) {
+                    var reviews = data.reviews || [];
+                    if (reviews.length > 0) {
+                        reviewsSection.innerHTML = '<h3>📝 Отзывы (' + reviews.length + ')</h3>' + 
+                            reviews.map(function(r) {
+                                var revStars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
                                 return '<div class="review">' +
-                                    '<strong>' + r.reviewerName + '</strong> ' + '★'.repeat(r.rating) +
-                                    '<p>' + r.comment + '</p>' +
+                                    '<div class="review-name">' + (r.reviewerName || 'Аноним') + '</div>' +
+                                    '<div class="review-rating">' + revStars + '</div>' +
+                                    '<p>' + (r.comment || r.text || 'Без комментария') + '</p>' +
                                     '</div>';
                             }).join('');
                     } else {
-                        reviewsSection.innerHTML = '<p style="color:#888">Нет отзывов</p>';
+                        reviewsSection.innerHTML = '<p style="color:#888">📭 Нет отзывов. Будьте первым!</p>';
                     }
                 })
                 .catch(function() {
-                    reviewsSection.innerHTML = '<p style="color:#888">Не удалось загрузить отзывы</p>';
+                  
+                    reviewsSection.innerHTML = '<p style="color:#888">📭 Отзывы отсутствуют</p>';
                 });
         })
         .catch(function(error) {
@@ -104,34 +128,28 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 });
 
-// Функция добавления в корзину
+
+function changeMainImage(el, src) {
+    document.querySelectorAll('.thumb').forEach(function(t) { t.classList.remove('active'); });
+    el.classList.add('active');
+    document.getElementById('mainImage').src = src;
+}
+
+
 function addToCart(id, title, price, img) {
     var cart = JSON.parse(localStorage.getItem('cart') || '[]');
     var exist = cart.find(function(item) { return item.id === id; });
-    
-    if (exist) {
-        exist.qty++;
-    } else {
-        cart.push({ id: id, title: title, price: price, qty: 1, img: img });
-    }
-    
+    if (exist) { exist.qty++; } else { cart.push({ id: id, title: title, price: price, qty: 1, img: img }); }
     localStorage.setItem('cart', JSON.stringify(cart));
     alert('✅ Товар добавлен в корзину!');
 }
 
-// Функция добавления в избранное
+
 function toggleFavorite(id) {
     var favs = JSON.parse(localStorage.getItem('favorites') || '[]');
     var index = favs.indexOf(id);
-    
-    if (index > -1) {
-        favs.splice(index, 1);
-        alert('❌ Удалено из избранного');
-    } else {
-        favs.push(id);
-        alert('❤️ Добавлено в избранное');
-    }
-    
+    if (index > -1) { favs.splice(index, 1); alert('❌ Удалено из избранного'); } 
+    else { favs.push(id); alert('❤️ Добавлено в избранное'); }
     localStorage.setItem('favorites', JSON.stringify(favs));
 }
 </script>
